@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Error - Smart Camera Recorder</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-gradient-to-r from-green-600 to-green-800 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-video text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold">Smart Camera Recorder</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="hover:text-green-200">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-6 py-8 flex flex-col items-center justify-center min-h-[70vh]">
+        <div class="text-center">
+            <div class="text-9xl font-bold text-red-600 mb-6">500</div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">Server Error</h1>
+            <p class="text-gray-600 mb-8">Something went wrong on our end. Please try again later or contact support.</p>
+            <div class="flex space-x-4 justify-center">
+                <a href="/" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-home mr-2"></i>Return to Dashboard
+                </a>
+                <a href="/logs" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-list mr-2"></i>View Logs
+                </a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

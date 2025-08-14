@@ -1,0 +1,14 @@
+{
+    "camera1": {
+        "name": "Noreste",
+        "rtsp_url": ""
+    },
+    "camera2": {
+        "name": "Noroeste",
+        "rtsp_url": ""
+    },
+	"camera3": {
+        "name": "Norte",
+        "rtsp_url": ""
+}
+}

@@ -1,0 +1,6 @@
+{
+    "segment_time": 60,
+    "retention_days": 7,
+    "max_storage_gb": 50,
+    "auto_cleanup": true
+}

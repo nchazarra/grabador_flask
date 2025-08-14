@@ -1,0 +1,825 @@
+2025-03-20 19:28:03 - logs - INFO - Logging system initialized with log file: app.log
+2025-03-20 19:28:03 - root - ERROR - Error loading cameras: [Errno 2] No such file or directory: 'C:\\Users\\nchazarra\\Desktop\\NEW RECORDING\\cameras.json'
+2025-03-20 19:28:03 - storage - INFO - Clearing recordings older than 7 days
+2025-03-20 19:28:03 - storage - INFO - Started background cleanup thread
+2025-03-20 19:28:03 - storage - INFO - Removed 0 files, freed 0.0 B
+2025-03-20 19:28:03 - storage - WARNING - Cleanup thread is already running
+2025-03-20 19:28:03 - __main__ - INFO - Application started
+2025-03-20 19:28:04 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.18.56:5000
+2025-03-20 19:28:04 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-20 19:28:21 - logs - INFO - Logging system initialized with log file: app.log
+2025-03-20 19:28:21 - storage - INFO - Clearing recordings older than 7 days
+2025-03-20 19:28:21 - storage - INFO - Started background cleanup thread
+2025-03-20 19:28:21 - storage - INFO - Removed 0 files, freed 0.0 B
+2025-03-20 19:28:21 - storage - WARNING - Cleanup thread is already running
+2025-03-20 19:28:21 - __main__ - INFO - Application started
+2025-03-20 19:28:22 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.18.56:5000
+2025-03-20 19:28:22 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-20 19:28:26 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 50, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all">${'{{ cameras[camera_id].rtsp_url }}'.replace('camera_id', cameraId)}</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:28:26 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:28:26] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:28:26 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:28:26] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-03-20 19:28:36 - app - ERROR - Exception on /logs [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 253, in view_logs
+    lines = int(lines) if lines and lines.isdigit() else 100
+                                    ^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'isdigit'
+2025-03-20 19:28:36 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:28:36] "[35m[1mGET /logs HTTP/1.1[0m" 500 -
+2025-03-20 19:28:54 - logs - INFO - Logging system initialized with log file: app.log
+2025-03-20 19:28:54 - storage - INFO - Clearing recordings older than 7 days
+2025-03-20 19:28:54 - storage - INFO - Started background cleanup thread
+2025-03-20 19:28:54 - storage - INFO - Removed 0 files, freed 0.0 B
+2025-03-20 19:28:54 - storage - WARNING - Cleanup thread is already running
+2025-03-20 19:28:54 - __main__ - INFO - Application started
+2025-03-20 19:28:55 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.18.56:5000
+2025-03-20 19:28:55 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-20 19:28:57 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all">${'{{ cameras[camera_id].rtsp_url }}'.replace('camera_id', cameraId)}</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:28:57 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:28:57] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:28:58 - app - ERROR - Exception on /logs [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 257, in view_logs
+    lines = int(lines) if lines and lines.isdigit() else 100
+                                    ^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'isdigit'
+2025-03-20 19:28:58 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:28:58] "[35m[1mGET /logs HTTP/1.1[0m" 500 -
+2025-03-20 19:29:51 - logs - INFO - Logging system initialized with log file: app.log
+2025-03-20 19:29:51 - storage - INFO - Clearing recordings older than 7 days
+2025-03-20 19:29:51 - storage - INFO - Started background cleanup thread
+2025-03-20 19:29:51 - storage - INFO - Removed 0 files, freed 0.0 B
+2025-03-20 19:29:51 - storage - WARNING - Cleanup thread is already running
+2025-03-20 19:29:51 - __main__ - INFO - Application started
+2025-03-20 19:29:52 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.18.56:5000
+2025-03-20 19:29:52 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-20 19:29:53 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all">${'{{ cameras[camera_id].rtsp_url }}'.replace('camera_id', cameraId)}</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:29:53 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:29:53] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:29:54 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all">${'{{ cameras[camera_id].rtsp_url }}'.replace('camera_id', cameraId)}</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:29:54 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:29:54] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:30:08 - logs - INFO - Logging system initialized with log file: app.log
+2025-03-20 19:30:08 - storage - INFO - Clearing recordings older than 7 days
+2025-03-20 19:30:08 - storage - INFO - Started background cleanup thread
+2025-03-20 19:30:08 - storage - INFO - Removed 0 files, freed 0.0 B
+2025-03-20 19:30:08 - storage - WARNING - Cleanup thread is already running
+2025-03-20 19:30:08 - __main__ - INFO - Application started
+2025-03-20 19:30:09 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.18.56:5000
+2025-03-20 19:30:09 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-20 19:30:09 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all">${'{{ cameras[camera_id].rtsp_url }}'.replace('camera_id', cameraId)}</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:30:09 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:30:09] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:30:56 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:30:56] "[32mGET /logs HTTP/1.1[0m" 302 -
+2025-03-20 19:30:56 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all">{% raw %}${{% endraw %}'{{ cameras[camera_id].rtsp_url }}'.replace('camera_id', cameraId){% raw %}}{% endraw %}</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:30:56 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:30:56] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:30:57 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all">{% raw %}${{% endraw %}'{{ cameras[camera_id].rtsp_url }}'.replace('camera_id', cameraId){% raw %}}{% endraw %}</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:30:57 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:30:57] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:30:57 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all">{% raw %}${{% endraw %}'{{ cameras[camera_id].rtsp_url }}'.replace('camera_id', cameraId){% raw %}}{% endraw %}</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:30:57 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:30:57] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:31:01 - logs - INFO - Logging system initialized with log file: app.log
+2025-03-20 19:31:01 - storage - INFO - Clearing recordings older than 7 days
+2025-03-20 19:31:01 - storage - INFO - Started background cleanup thread
+2025-03-20 19:31:01 - storage - INFO - Removed 0 files, freed 0.0 B
+2025-03-20 19:31:01 - storage - WARNING - Cleanup thread is already running
+2025-03-20 19:31:01 - __main__ - INFO - Application started
+2025-03-20 19:31:02 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.18.56:5000
+2025-03-20 19:31:02 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-20 19:31:04 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all">{% raw %}${{% endraw %}'{{ cameras[camera_id].rtsp_url }}'.replace('camera_id', cameraId){% raw %}}{% endraw %}</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:31:04 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:31:04] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:31:05 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all">{% raw %}${{% endraw %}'{{ cameras[camera_id].rtsp_url }}'.replace('camera_id', cameraId){% raw %}}{% endraw %}</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:31:05 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:31:05] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:31:33 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all" id="rtsp-url-display"></div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:31:33 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:31:33] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:31:34 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all" id="rtsp-url-display"></div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:31:34 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:31:34] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:31:42 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="font-mono text-sm break-all" id="rtsp-url-display"></div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:31:42 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:31:42] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:36:11 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="text-gray-600 text-sm">RTSP URL</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:36:11 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:36:11] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:36:11 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="text-gray-600 text-sm">RTSP URL</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:36:11 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:36:11] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:36:11 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="text-gray-600 text-sm">RTSP URL</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:36:11 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:36:11] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:36:11 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="text-gray-600 text-sm">RTSP URL</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:36:11 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:36:11] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:36:11 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="text-gray-600 text-sm">RTSP URL</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:36:11 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:36:11] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 19:36:16 - app - ERROR - Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\app.py", line 54, in index
+    return render_template(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\flask\templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\nchazarra\Desktop\NEW RECORDING\templates\index.html", line 248, in top-level template code
+    <div class="text-gray-600 text-sm">RTSP URL</div>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nchazarra\anaconda3\Lib\site-packages\jinja2\environment.py", line 487, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: dict object has no element Undefined
+2025-03-20 19:36:16 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 19:36:16] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-03-20 20:27:14 - logs - INFO - Logging system initialized with log file: app.log
+2025-03-20 20:27:14 - storage - INFO - Clearing recordings older than 7 days
+2025-03-20 20:27:14 - storage - INFO - Started background cleanup thread
+2025-03-20 20:27:14 - storage - INFO - Removed 0 files, freed 0.0 B
+2025-03-20 20:27:14 - storage - WARNING - Cleanup thread is already running
+2025-03-20 20:27:14 - __main__ - INFO - Application started
+2025-03-20 20:27:15 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.18.56:5000
+2025-03-20 20:27:15 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-20 20:27:19 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:19] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:19 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:19] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:25 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:25] "GET /camera_stats/camera1 HTTP/1.1" 200 -
+2025-03-20 20:27:33 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:33] "[32mPOST /start_recording HTTP/1.1[0m" 302 -
+2025-03-20 20:27:33 - recorder - INFO - Starting recording for camera camera1
+2025-03-20 20:27:33 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:33] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:33 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:33] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:37 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:37] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:37 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:37] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:38 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:38] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:38 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:38] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:40 - recorder - WARNING - FFmpeg process for camera camera1 ended with code 2880417800. Restarting...
+2025-03-20 20:27:41 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:41] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:41 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:41] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:45 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:45] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:45 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:45] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:45 - recorder - WARNING - FFmpeg process for camera camera1 ended with code 2880417800. Restarting...
+2025-03-20 20:27:46 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:46] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:46 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:46] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:47 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:47] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:47 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:47] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:47 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:47] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:47 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:47] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:47 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:47] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:47 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:47] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:47 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:47] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:47 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:47] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:48 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:48] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:48 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:48] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:51 - recorder - WARNING - FFmpeg process for camera camera1 ended with code 2880417800. Restarting...
+2025-03-20 20:27:51 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:51] "GET /recordings HTTP/1.1" 200 -
+2025-03-20 20:27:54 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:54] "GET / HTTP/1.1" 200 -
+2025-03-20 20:27:54 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:27:54] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:27:56 - recorder - WARNING - FFmpeg process for camera camera1 ended with code 2880417800. Restarting...
+2025-03-20 20:28:01 - recorder - WARNING - FFmpeg process for camera camera1 ended with code 2880417800. Restarting...
+2025-03-20 20:28:06 - recorder - WARNING - Multiple failures for camera camera1. Increasing retry delay to 10s
+2025-03-20 20:28:06 - recorder - WARNING - FFmpeg process for camera camera1 ended with code 2880417800. Restarting...
+2025-03-20 20:28:16 - recorder - WARNING - Multiple failures for camera camera1. Increasing retry delay to 10s
+2025-03-20 20:28:16 - recorder - WARNING - FFmpeg process for camera camera1 ended with code 2880417800. Restarting...
+2025-03-20 20:28:25 - werkzeug - INFO - 127.0.0.1 - - [20/Mar/2025 20:28:25] "GET /get_storage_usage HTTP/1.1" 200 -
+2025-03-20 20:28:26 - recorder - WARNING - Multiple failures for camera camera1. Increasing retry delay to 10s
+2025-03-20 20:28:26 - recorder - WARNING - FFmpeg process for camera camera1 ended with code 2880417800. Restarting...

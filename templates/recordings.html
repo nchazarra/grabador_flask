@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recordings - Smart Camera Recorder</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card {
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .flash-message {
+            animation: fade-out 5s forwards;
+        }
+        @keyframes fade-out {
+            0% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .video-card {
+            transition: all 0.2s ease;
+        }
+        .video-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-gradient-to-r from-green-600 to-green-800 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-video text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold">Smart Camera Recorder</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="hover:text-green-200">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                    <a href="/recordings" class="hover:text-green-200 font-semibold">
+                        <i class="fas fa-film mr-2"></i>Recordings
+                    </a>
+                    <a href="/settings" class="hover:text-green-200">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </a>
+                    <a href="/logs" class="hover:text-green-200">
+                        <i class="fas fa-list mr-2"></i>Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mx-auto px-6 mt-4">
+                {% for category, message in messages %}
+                    <div class="p-4 mb-4 rounded-md flash-message {{ 'bg-green-100 text-green-800' if category == 'success' else 'bg-red-100 text-red-800' if category == 'error' else 'bg-blue-100 text-blue-800' }}">
+                        <i class="{{ 'fas fa-check-circle' if category == 'success' else 'fas fa-exclamation-circle' if category == 'error' else 'fas fa-info-circle' }} mr-2"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main class="container mx-auto px-6 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Recordings</h1>
+            <div class="flex space-x-2">
+                <button id="toggleSelectMode" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-check-square mr-2"></i>Select Mode
+                </button>
+                <button id="downloadSelected" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg hidden">
+                    <i class="fas fa-download mr-2"></i>Download Selected
+                </button>
+            </div>
+        </div>
+
+        <!-- Recordings Filter and Search -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Filter Recordings</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Camera</label>
+                    <select id="cameraFilter" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                        <option value="all">All Cameras</option>
+                        {% for camera_id, camera_info in cameras.items() %}
+                            <option value="{{ camera_id }}">{{ camera_info.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" id="dateFilter" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                    <input type="text" id="searchFilter" placeholder="Search in filenames..." class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                </div>
+            </div>
+        </div>
+
+        <!-- Recording Actions -->
+        <form id="selectForm" action="/download_selected_recordings" method="post">
+            <!-- Recordings List -->
+            {% if recordings.total_count == 0 %}
+                <div class="text-center py-12">
+                    <i class="fas fa-film text-gray-300 text-5xl mb-4"></i>
+                    <h3 class="text-2xl text-gray-500 font-light">No recordings found</h3>
+                    <p class="text-gray-500 mt-2">Start recording from the dashboard to see your recordings here.</p>
+                    <a href="/" class="inline-block mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        <i class="fas fa-home mr-2"></i>Go to Dashboard
+                    </a>
+                </div>
+            {% else %}
+                <!-- Recordings for each camera -->
+                {% for camera_id, files in recordings.by_camera.items() %}
+                    <div class="mb-8 camera-section" data-camera-id="{{ camera_id }}">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <h2 class="text-xl font-semibold text-gray-800">
+                                {{ cameras[camera_id].name if camera_id in cameras else camera_id }}
+                            </h2>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                                {{ files|length }} recordings
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {% for file in files %}
+                                <div class="video-card bg-white rounded-lg shadow overflow-hidden recording-item" 
+                                     data-date="{{ file.date }}" 
+                                     data-filename="{{ file.filename }}">
+                                    <div class="relative">
+                                        <div class="bg-gray-200 h-36 flex items-center justify-center">
+                                            <i class="fas fa-file-video text-3xl text-gray-400"></i>
+                                        </div>
+                                        <div class="absolute top-2 right-2">
+                                            <span class="bg-gray-800 bg-opacity-75 text-white text-xs rounded px-2 py-1">
+                                                {{ file.size_formatted }}
+                                            </span>
+                                        </div>
+                                        <div class="select-checkbox absolute top-2 left-2 hidden">
+                                            <input type="checkbox" name="selected_files" value="{{ file.path }}" class="w-5 h-5 rounded">
+                                        </div>
+                                    </div>
+                                    <div class="p-4">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <h3 class="text-sm font-semibold text-gray-800 truncate" title="{{ file.filename }}">
+                                                {{ file.filename }}
+                                            </h3>
+                                            <span class="text-xs text-gray-500">
+                                                {{ file.age_days }} day{% if file.age_days != 1 %}s{% endif %} ago
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-gray-600 mb-3">{{ file.date }}</p>
+                                        <div class="flex justify-between">
+                                            <a href="/recordings/{{ file.path }}" class="text-blue-600 hover:text-blue-800 text-sm" target="_blank">
+                                                <i class="fas fa-download mr-1"></i>Download
+                                            </a>
+                                            <a href="/recordings/{{ file.path }}" class="text-green-600 hover:text-green-800 text-sm" target="_blank">
+                                                <i class="fas fa-play mr-1"></i>Play
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </form>
+
+        <div class="mt-8 text-center">
+            <a href="/" class="inline-flex items-center text-green-600 hover:text-green-800">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to Dashboard
+            </a>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cameraFilter = document.getElementById('cameraFilter');
+            const dateFilter = document.getElementById('dateFilter');
+            const searchFilter = document.getElementById('searchFilter');
+            const toggleSelectMode = document.getElementById('toggleSelectMode');
+            const downloadSelected = document.getElementById('downloadSelected');
+            const selectForm = document.getElementById('selectForm');
+            
+            let selectMode = false;
+            
+            // Apply filters
+            function applyFilters() {
+                const selectedCamera = cameraFilter.value;
+                const selectedDate = dateFilter.value ? new Date(dateFilter.value) : null;
+                const searchText = searchFilter.value.toLowerCase();
+                
+                // Filter camera sections
+                document.querySelectorAll('.camera-section').forEach(section => {
+                    const cameraId = section.dataset.cameraId;
+                    if (selectedCamera === 'all' || selectedCamera === cameraId) {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Filter recordings within this camera section
+                    section.querySelectorAll('.recording-item').forEach(item => {
+                        const fileDate = new Date(item.dataset.date);
+                        const filename = item.dataset.filename.toLowerCase();
+                        
+                        let showItem = true;
+                        
+                        // Apply date filter
+                        if (selectedDate) {
+                            const filterDate = selectedDate.toISOString().split('T')[0];
+                            const itemDate = fileDate.toISOString().split('T')[0];
+                            if (filterDate !== itemDate) {
+                                showItem = false;
+                            }
+                        }
+                        
+                        // Apply search filter
+                        if (searchText && !filename.includes(searchText)) {
+                            showItem = false;
+                        }
+                        
+                        item.style.display = showItem ? 'block' : 'none';
+                    });
+                    
+                    // Check if any recordings are visible in this section
+                    const hasVisibleRecordings = Array.from(section.querySelectorAll('.recording-item')).some(
+                        item => item.style.display !== 'none'
+                    );
+                    
+                    // Hide section if all recordings are filtered out
+                    if (!hasVisibleRecordings) {
+                        section.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Toggle select mode
+            function toggleSelect() {
+                selectMode = !selectMode;
+                
+                if (selectMode) {
+                    toggleSelectMode.innerHTML = '<i class="fas fa-times mr-2"></i>Cancel Selection';
+                    toggleSelectMode.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    toggleSelectMode.classList.add('bg-red-600', 'hover:bg-red-700');
+                    downloadSelected.classList.remove('hidden');
+                    
+                    // Show checkboxes
+                    document.querySelectorAll('.select-checkbox').forEach(checkbox => {
+                        checkbox.classList.remove('hidden');
+                    });
+                } else {
+                    toggleSelectMode.innerHTML = '<i class="fas fa-check-square mr-2"></i>Select Mode';
+                    toggleSelectMode.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    toggleSelectMode.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    downloadSelected.classList.add('hidden');
+                    
+                    // Hide checkboxes and uncheck all
+                    document.querySelectorAll('.select-checkbox').forEach(checkbox => {
+                        checkbox.classList.add('hidden');
+                        checkbox.querySelector('input').checked = false;
+                    });
+                }
+            }
+            
+            // Initialize filters
+            cameraFilter.addEventListener('change', applyFilters);
+            dateFilter.addEventListener('change', applyFilters);
+            searchFilter.addEventListener('input', applyFilters);
+            
+            // Initialize select mode
+            toggleSelectMode.addEventListener('click', toggleSelect);
+            
+            // Handle download selected
+            downloadSelected.addEventListener('click', function() {
+                const checkedBoxes = document.querySelectorAll('input[name="selected_files"]:checked');
+                
+                if (checkedBoxes.length === 0) {
+                    alert('Please select at least one recording to download.');
+                    return;
+                }
+                
+                selectForm.submit();
+            });
+        });
+    </script>
+</body>
+</html>

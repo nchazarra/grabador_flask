@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Camera Recorder</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .recording-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+        .card {
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .flash-message {
+            animation: fade-out 5s forwards;
+        }
+        @keyframes fade-out {
+            0% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-gradient-to-r from-green-600 to-green-800 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-video text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold">Smart Camera Recorder</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="hover:text-green-200">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                    <a href="/recordings" class="hover:text-green-200">
+                        <i class="fas fa-film mr-2"></i>Recordings
+                    </a>
+                    <a href="/settings" class="hover:text-green-200">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </a>
+                    <a href="/logs" class="hover:text-green-200">
+                        <i class="fas fa-list mr-2"></i>Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mx-auto px-6 mt-4">
+                {% for category, message in messages %}
+                    <div class="p-4 mb-4 rounded-md flash-message {{ 'bg-green-100 text-green-800' if category == 'success' else 'bg-red-100 text-red-800' if category == 'error' else 'bg-blue-100 text-blue-800' }}">
+                        <i class="{{ 'fas fa-check-circle' if category == 'success' else 'fas fa-exclamation-circle' if category == 'error' else 'fas fa-info-circle' }} mr-2"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main class="container mx-auto px-6 py-8">
+        <!-- Camera Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for camera_id, camera_info in cameras.items() %}
+            <div class="card bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="relative">
+                    <div class="bg-gray-200 h-48 flex items-center justify-center">
+                        <i class="fas fa-camera text-4xl text-gray-400"></i>
+                    </div>
+                    {% if camera_id in recording_cameras %}
+                    <div class="absolute top-4 right-4 flex items-center">
+                        <span class="recording-pulse inline-flex h-3 w-3 rounded-full bg-red-600 mr-2"></span>
+                        <span class="text-xs bg-red-600 text-white px-2 py-1 rounded-full">RECORDING</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xl font-semibold text-gray-800">{{ camera_info.name }}</h3>
+                        <button class="text-blue-600 hover:text-blue-800 text-sm" 
+                                onclick="showCameraDetails('{{ camera_id }}')">
+                            <i class="fas fa-info-circle"></i> Details
+                        </button>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4 truncate" title="{{ camera_info.rtsp_url }}">
+                        {{ camera_info.rtsp_url }}
+                    </p>
+                    
+                    {% if camera_id not in recording_cameras %}
+                    <form action="/start_recording" method="post" class="space-y-4">
+                        <input type="hidden" name="camera_id" value="{{ camera_id }}">
+                        <div class="flex items-center space-x-2">
+                            <input type="number" name="segment_time" 
+                                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200"
+                                   placeholder="Segment time (sec)" value="{{ settings.segment_time }}" required>
+                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                                <i class="fas fa-play mr-2"></i>Start
+                            </button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <form action="/stop_recording" method="post">
+                        <input type="hidden" name="camera_id" value="{{ camera_id }}">
+                        <button type="submit" class="w-full bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
+                            <i class="fas fa-stop mr-2"></i>Stop Recording
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Recording Stats -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Recording Statistics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-green-100 rounded-lg p-4">
+                    <div class="text-green-800 text-sm font-medium">Active Recordings</div>
+                    <div class="text-2xl font-bold text-green-900">{{ recording_cameras|length }}</div>
+                </div>
+                <div class="bg-blue-100 rounded-lg p-4">
+                    <div class="text-blue-800 text-sm font-medium">Total Cameras</div>
+                    <div class="text-2xl font-bold text-blue-900">{{ cameras|length }}</div>
+                </div>
+                <div class="bg-purple-100 rounded-lg p-4">
+                    <div class="text-purple-800 text-sm font-medium">Storage Used</div>
+                    <div class="text-2xl font-bold text-purple-900">{{ storage_info.size_formatted }}</div>
+                    <div class="mt-2 bg-gray-200 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: {{ storage_info.percentage }}%"></div>
+                    </div>
+                    <div class="text-xs text-right mt-1 text-gray-600">{{ storage_info.percentage }}% of {{ settings.max_storage_gb }} GB</div>
+                </div>
+                <div class="bg-yellow-100 rounded-lg p-4">
+                    <div class="text-yellow-800 text-sm font-medium">Retention Policy</div>
+                    <div class="text-2xl font-bold text-yellow-900">{{ settings.retention_days }} days</div>
+                    <div class="text-xs text-gray-600 mt-1">
+                        {{ "Auto cleanup enabled" if settings.auto_cleanup else "Auto cleanup disabled" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button id="startAllRecordings" class="p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-play-circle mr-2"></i>Start All Recordings
+                </button>
+                <button id="stopAllRecordings" class="p-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    <i class="fas fa-stop-circle mr-2"></i>Stop All Recordings
+                </button>
+                <button id="downloadAllRecordings" class="p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-download mr-2"></i>Download All Recordings
+                </button>
+                <button id="clearOldRecordings" class="p-4 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
+                    <i class="fas fa-trash mr-2"></i>Clear Old Recordings
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Camera Details Modal -->
+    <div id="cameraDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold" id="modalCameraName">Camera Details</h3>
+                <button onclick="hideCameraDetails()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="cameraDetailsContent" class="space-y-4">
+                <p class="text-center text-gray-500">Loading camera details...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch storage used from the backend
+        function fetchStorageUsed() {
+            fetch('/get_storage_usage')
+                .then(response => response.json())
+                .then(data => {
+                    const storageElement = document.querySelector('.bg-purple-100 .text-2xl');
+                    const progressBar = document.querySelector('.bg-purple-100 .bg-purple-600');
+                    const percentageText = document.querySelector('.bg-purple-100 .text-xs');
+                    
+                    if (storageElement) storageElement.textContent = data.size_formatted;
+                    if (progressBar) progressBar.style.width = `${data.percentage}%`;
+                    if (percentageText) percentageText.textContent = `${data.percentage}% of {{ settings.max_storage_gb }} GB`;
+                })
+                .catch(error => console.error('Error fetching storage:', error));
+        }
+
+        // Show camera details modal
+        function showCameraDetails(cameraId) {
+            const modal = document.getElementById('cameraDetailsModal');
+            const content = document.getElementById('cameraDetailsContent');
+            
+            modal.classList.remove('hidden');
+            
+            // Fetch camera stats
+            fetch(`/camera_stats/${cameraId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('modalCameraName').textContent = data.camera_name;
+                    
+                    // Build HTML content safely
+                    let htmlContent = `
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-100 p-3 rounded">
+                                <div class="text-gray-600 text-sm">Recording Status</div>
+                                <div class="font-semibold">${data.is_recording ? 
+                                    '<span class="text-green-600"><i class="fas fa-circle-play mr-1"></i>Active</span>' : 
+                                    '<span class="text-gray-600"><i class="fas fa-circle-stop mr-1"></i>Inactive</span>'}
+                                </div>
+                            </div>
+                            <div class="bg-gray-100 p-3 rounded">
+                                <div class="text-gray-600 text-sm">Recording Count</div>
+                                <div class="font-semibold">${data.recording_count} files</div>
+                            </div>
+                            <div class="bg-gray-100 p-3 rounded">
+                                <div class="text-gray-600 text-sm">Total Size</div>
+                                <div class="font-semibold">${data.total_size_formatted}</div>
+                            </div>
+                            <div class="bg-gray-100 p-3 rounded">
+                                <div class="text-gray-600 text-sm">Estimated Duration</div>
+                                <div class="font-semibold">${data.estimated_duration_formatted}</div>
+                            </div>
+                            <div class="col-span-2 bg-gray-100 p-3 rounded">
+    <div class="text-gray-600 text-sm">RTSP URL</div>
+    <div class="font-mono text-sm break-all" id="rtsp-url-{{ cameraId }}">
+        {% if camera_data and camera_data.camera_rtsp_url %}
+            {{ camera_data.camera_rtsp_url }}
+        {% else %}
+            N/A
+        {% endif %}
+    </div>
+</div>
+                        </div>`;
+                        
+                    // Add action buttons based on recording status
+                    if (data.is_recording) {
+                        htmlContent += `
+                            <div class="flex justify-end mt-4 space-x-2">
+                                <form action="/stop_recording" method="post">
+                                    <input type="hidden" name="camera_id" value="${cameraId}">
+                                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                                        <i class="fas fa-stop mr-1"></i>Stop Recording
+                                    </button>
+                                </form>
+                                <a href="/recordings" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                    <i class="fas fa-film mr-1"></i>View Recordings
+                                </a>
+                            </div>`;
+                    } else {
+                        htmlContent += `
+                            <div class="flex justify-end mt-4 space-x-2">
+                                <form action="/start_recording" method="post">
+                                    <input type="hidden" name="camera_id" value="${cameraId}">
+                                    <input type="hidden" name="segment_time" value="{{ settings.segment_time }}">
+                                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                                        <i class="fas fa-play mr-1"></i>Start Recording
+                                    </button>
+                                </form>
+                                <a href="/recordings" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                    <i class="fas fa-film mr-1"></i>View Recordings
+                                </a>
+                            </div>`;
+                    }
+                    
+                    // Update content
+                    content.innerHTML = htmlContent;
+                    
+                    // Set RTSP URL safely after the DOM has been updated
+                    document.getElementById(`rtsp-url-${cameraId}`).textContent = data.camera_rtsp_url || "RTSP URL not available";
+                })
+                .catch(error => {
+                    console.error('Error fetching camera details:', error);
+                    content.innerHTML = `<p class="text-red-600">Error loading camera details: ${error.message}</p>`;
+                });
+        }
+
+        // Hide camera details modal
+        function hideCameraDetails() {
+            document.getElementById('cameraDetailsModal').classList.add('hidden');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchStorageUsed();
+            
+            // Auto-refresh storage information every 30 seconds
+            setInterval(fetchStorageUsed, 30000);
+            
+            // Handle modal backdrop click to close
+            document.getElementById('cameraDetailsModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideCameraDetails();
+                }
+            });
+        });
+
+        // Start all recordings
+        document.getElementById('startAllRecordings').addEventListener('click', function() {
+            const segmentTime = prompt("Enter segment time in seconds:", "{{ settings.segment_time }}");
+            if (segmentTime) {
+                fetch('/start_all_recordings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `segment_time=${segmentTime}`
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                });
+            }
+        });
+
+        // Stop all recordings
+        document.getElementById('stopAllRecordings').addEventListener('click', function() {
+            if (confirm("Are you sure you want to stop all recordings?")) {
+                fetch('/stop_all_recordings', {
+                    method: 'POST'
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                });
+            }
+        });
+
+        // Download all recordings
+        document.getElementById('downloadAllRecordings').addEventListener('click', function() {
+            if (confirm("This may take a while depending on the amount of recordings. Continue?")) {
+                window.location.href = '/download_all_recordings';
+            }
+        });
+
+        // Clear old recordings
+        document.getElementById('clearOldRecordings').addEventListener('click', function() {
+            const days = prompt("Enter number of days to keep recordings (older than this will be deleted):", "{{ settings.retention_days }}");
+            if (days) {
+                if (confirm(`Are you sure you want to clear all recordings older than ${days} days? This cannot be undone.`)) {
+                    fetch('/clear_old_recordings', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `days=${days}`
+                    }).then(response => {
+                        if (response.ok) {
+                            window.location.reload();
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
