@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Camera Recorder</title>
+    <title>Smart Camera Recorder - Enhanced</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -11,12 +11,8 @@
             animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: .5;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
         }
         .card {
             transition: transform 0.2s ease-in-out;
@@ -32,6 +28,15 @@
             90% { opacity: 1; }
             100% { opacity: 0; }
         }
+        .gpu-badge {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+        }
+        .encoding-option {
+            transition: all 0.3s ease;
+        }
+        .encoding-option:hover {
+            transform: scale(1.02);
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -41,6 +46,19 @@
                 <div class="flex items-center">
                     <i class="fas fa-video text-2xl mr-3"></i>
                     <h1 class="text-2xl font-bold">Smart Camera Recorder</h1>
+                    {% if encoding_info.gpu_available.nvidia %}
+                        <span class="ml-3 gpu-badge text-xs px-2 py-1 rounded-full text-white">
+                            <i class="fas fa-microchip mr-1"></i>NVIDIA GPU
+                        </span>
+                    {% elif encoding_info.gpu_available.amd %}
+                        <span class="ml-3 gpu-badge text-xs px-2 py-1 rounded-full text-white">
+                            <i class="fas fa-microchip mr-1"></i>AMD GPU
+                        </span>
+                    {% elif encoding_info.gpu_available.intel %}
+                        <span class="ml-3 gpu-badge text-xs px-2 py-1 rounded-full text-white">
+                            <i class="fas fa-microchip mr-1"></i>Intel QuickSync
+                        </span>
+                    {% endif %}
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="/" class="hover:text-green-200">
@@ -103,16 +121,74 @@
                     </p>
                     
                     {% if camera_id not in recording_cameras %}
-                    <form action="/start_recording" method="post" class="space-y-4">
+                    <form action="/start_recording" method="post" class="space-y-3">
                         <input type="hidden" name="camera_id" value="{{ camera_id }}">
-                        <div class="flex items-center space-x-2">
+                        
+                        <!-- Basic Settings Row -->
+                        <div class="grid grid-cols-2 gap-2">
                             <input type="number" name="segment_time" 
-                                   class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200"
-                                   placeholder="Segment time (sec)" value="{{ settings.segment_time }}" required>
-                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
-                                <i class="fas fa-play mr-2"></i>Start
+                                   class="rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 text-sm"
+                                   placeholder="Segment (sec)" value="{{ settings.segment_time }}" required>
+                            
+                            <select name="quality" class="rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 text-sm">
+                                <option value="LOW">Low Quality</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HIGH" selected>High</option>
+                                <option value="ULTRA">Ultra</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Encoding Options -->
+                        <div class="space-y-2">
+                            <select name="encoding_preset" id="encoding_{{ camera_id }}" 
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 text-sm"
+                                    onchange="toggleEncodingOptions('{{ camera_id }}')">
+                                <option value="copy">Copy Stream (No Re-encoding)</option>
+                                <optgroup label="CPU Encoding">
+                                    <option value="h264_cpu">H.264 (CPU)</option>
+                                    <option value="h265_cpu">H.265/HEVC (CPU)</option>
+                                </optgroup>
+                                {% if encoding_info.gpu_available.nvidia %}
+                                <optgroup label="NVIDIA GPU">
+                                    <option value="h264_nvenc">H.264 (NVENC)</option>
+                                    <option value="h265_nvenc">H.265/HEVC (NVENC)</option>
+                                </optgroup>
+                                {% endif %}
+                                {% if encoding_info.gpu_available.amd %}
+                                <optgroup label="AMD GPU">
+                                    <option value="h264_amf">H.264 (AMF)</option>
+                                    <option value="h265_amf">H.265/HEVC (AMF)</option>
+                                </optgroup>
+                                {% endif %}
+                                {% if encoding_info.gpu_available.intel %}
+                                <optgroup label="Intel GPU">
+                                    <option value="h264_qsv">H.264 (QuickSync)</option>
+                                </optgroup>
+                                {% endif %}
+                            </select>
+                            
+                            <div class="flex items-center space-x-4 text-sm">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="audio_enabled" class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-1">
+                                    <span>Record Audio</span>
+                                </label>
+                            </div>
+                            
+                            <!-- Advanced Options (hidden by default) -->
+                            <div id="advanced_{{ camera_id }}" class="hidden">
+                                <input type="text" name="custom_params" 
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 text-xs"
+                                       placeholder="Custom FFmpeg params (optional)">
+                            </div>
+                            
+                            <button type="button" onclick="toggleAdvanced('{{ camera_id }}')" class="text-xs text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-cog mr-1"></i>Advanced Options
                             </button>
                         </div>
+                        
+                        <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                            <i class="fas fa-play mr-2"></i>Start Recording
+                        </button>
                     </form>
                     {% else %}
                     <form action="/stop_recording" method="post">
@@ -130,7 +206,7 @@
         <!-- Recording Stats -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Recording Statistics</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div class="bg-green-100 rounded-lg p-4">
                     <div class="text-green-800 text-sm font-medium">Active Recordings</div>
                     <div class="text-2xl font-bold text-green-900">{{ recording_cameras|length }}</div>
@@ -154,6 +230,23 @@
                         {{ "Auto cleanup enabled" if settings.auto_cleanup else "Auto cleanup disabled" }}
                     </div>
                 </div>
+                <div class="bg-indigo-100 rounded-lg p-4">
+                    <div class="text-indigo-800 text-sm font-medium">GPU Acceleration</div>
+                    <div class="text-lg font-bold text-indigo-900">
+                        {% if encoding_info.gpu_available.nvidia %}
+                            <i class="fas fa-check-circle text-green-600"></i> NVIDIA
+                        {% elif encoding_info.gpu_available.amd %}
+                            <i class="fas fa-check-circle text-green-600"></i> AMD
+                        {% elif encoding_info.gpu_available.intel %}
+                            <i class="fas fa-check-circle text-green-600"></i> Intel
+                        {% else %}
+                            <i class="fas fa-times-circle text-red-600"></i> CPU Only
+                        {% endif %}
+                    </div>
+                    <div class="text-xs text-gray-600 mt-1">
+                        {{ encoding_info.encoding_capabilities|length }} codecs available
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -161,17 +254,17 @@
         <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button id="startAllRecordings" class="p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <button id="startAllRecordings" class="p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors encoding-option">
                     <i class="fas fa-play-circle mr-2"></i>Start All Recordings
                 </button>
                 <button id="stopAllRecordings" class="p-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
                     <i class="fas fa-stop-circle mr-2"></i>Stop All Recordings
                 </button>
                 <button id="downloadAllRecordings" class="p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    <i class="fas fa-download mr-2"></i>Download All Recordings
+                    <i class="fas fa-download mr-2"></i>Download All
                 </button>
                 <button id="clearOldRecordings" class="p-4 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
-                    <i class="fas fa-trash mr-2"></i>Clear Old Recordings
+                    <i class="fas fa-trash mr-2"></i>Clear Old
                 </button>
             </div>
         </div>
@@ -192,38 +285,84 @@
         </div>
     </div>
 
+    <!-- Start All Modal -->
+    <div id="startAllModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">Start All Recordings</h3>
+            <form id="startAllForm" action="/start_all_recordings" method="post">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Segment Time (seconds)</label>
+                        <input type="number" name="segment_time" value="{{ settings.segment_time }}" 
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Encoding Preset</label>
+                        <select name="encoding_preset" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                            <option value="copy">Copy Stream (No Re-encoding)</option>
+                            <option value="h264_cpu">H.264 (CPU)</option>
+                            <option value="h265_cpu">H.265/HEVC (CPU)</option>
+                            {% if encoding_info.gpu_available.nvidia %}
+                            <option value="h264_nvenc">H.264 (NVENC)</option>
+                            <option value="h265_nvenc">H.265/HEVC (NVENC)</option>
+                            {% endif %}
+                            {% if encoding_info.gpu_available.amd %}
+                            <option value="h264_amf">H.264 (AMF)</option>
+                            <option value="h265_amf">H.265/HEVC (AMF)</option>
+                            {% endif %}
+                            {% if encoding_info.gpu_available.intel %}
+                            <option value="h264_qsv">H.264 (QuickSync)</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Quality</label>
+                        <select name="quality" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="HIGH" selected>High</option>
+                            <option value="ULTRA">Ultra</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 mt-6">
+                    <button type="button" onclick="hideStartAllModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                        Start All
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Fetch storage used from the backend
-        function fetchStorageUsed() {
-            fetch('/get_storage_usage')
-                .then(response => response.json())
-                .then(data => {
-                    const storageElement = document.querySelector('.bg-purple-100 .text-2xl');
-                    const progressBar = document.querySelector('.bg-purple-100 .bg-purple-600');
-                    const percentageText = document.querySelector('.bg-purple-100 .text-xs');
-                    
-                    if (storageElement) storageElement.textContent = data.size_formatted;
-                    if (progressBar) progressBar.style.width = `${data.percentage}%`;
-                    if (percentageText) percentageText.textContent = `${data.percentage}% of {{ settings.max_storage_gb }} GB`;
-                })
-                .catch(error => console.error('Error fetching storage:', error));
+        // Toggle advanced options
+        function toggleAdvanced(cameraId) {
+            const advanced = document.getElementById(`advanced_${cameraId}`);
+            advanced.classList.toggle('hidden');
         }
 
-        // Show camera details modal
+        // Toggle encoding options visibility
+        function toggleEncodingOptions(cameraId) {
+            const encoding = document.getElementById(`encoding_${cameraId}`);
+            // Add any additional logic here if needed
+        }
+
+        // Show/hide camera details modal
         function showCameraDetails(cameraId) {
             const modal = document.getElementById('cameraDetailsModal');
             const content = document.getElementById('cameraDetailsContent');
             
             modal.classList.remove('hidden');
             
-            // Fetch camera stats
             fetch(`/camera_stats/${cameraId}`)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('modalCameraName').textContent = data.camera_name;
                     
-                    // Build HTML content safely
-                    let htmlContent = `
+                    content.innerHTML = `
                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-gray-100 p-3 rounded">
                                 <div class="text-gray-600 text-sm">Recording Status</div>
@@ -245,122 +384,85 @@
                                 <div class="font-semibold">${data.estimated_duration_formatted}</div>
                             </div>
                             <div class="col-span-2 bg-gray-100 p-3 rounded">
-    <div class="text-gray-600 text-sm">RTSP URL</div>
-    <div class="font-mono text-sm break-all" id="rtsp-url-{{ cameraId }}">
-        {% if camera_data and camera_data.camera_rtsp_url %}
-            {{ camera_data.camera_rtsp_url }}
-        {% else %}
-            N/A
-        {% endif %}
-    </div>
-</div>
+                                <div class="text-gray-600 text-sm">RTSP URL</div>
+                                <div class="font-mono text-sm break-all">${data.camera_rtsp_url || 'N/A'}</div>
+                            </div>
                         </div>`;
-                        
-                    // Add action buttons based on recording status
-                    if (data.is_recording) {
-                        htmlContent += `
-                            <div class="flex justify-end mt-4 space-x-2">
-                                <form action="/stop_recording" method="post">
-                                    <input type="hidden" name="camera_id" value="${cameraId}">
-                                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-                                        <i class="fas fa-stop mr-1"></i>Stop Recording
-                                    </button>
-                                </form>
-                                <a href="/recordings" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                                    <i class="fas fa-film mr-1"></i>View Recordings
-                                </a>
-                            </div>`;
-                    } else {
-                        htmlContent += `
-                            <div class="flex justify-end mt-4 space-x-2">
-                                <form action="/start_recording" method="post">
-                                    <input type="hidden" name="camera_id" value="${cameraId}">
-                                    <input type="hidden" name="segment_time" value="{{ settings.segment_time }}">
-                                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                                        <i class="fas fa-play mr-1"></i>Start Recording
-                                    </button>
-                                </form>
-                                <a href="/recordings" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                                    <i class="fas fa-film mr-1"></i>View Recordings
-                                </a>
-                            </div>`;
-                    }
-                    
-                    // Update content
-                    content.innerHTML = htmlContent;
-                    
-                    // Set RTSP URL safely after the DOM has been updated
-                    document.getElementById(`rtsp-url-${cameraId}`).textContent = data.camera_rtsp_url || "RTSP URL not available";
                 })
                 .catch(error => {
                     console.error('Error fetching camera details:', error);
-                    content.innerHTML = `<p class="text-red-600">Error loading camera details: ${error.message}</p>`;
+                    content.innerHTML = `<p class="text-red-600">Error loading camera details</p>`;
                 });
         }
 
-        // Hide camera details modal
         function hideCameraDetails() {
             document.getElementById('cameraDetailsModal').classList.add('hidden');
+        }
+
+        // Show/hide start all modal
+        function showStartAllModal() {
+            document.getElementById('startAllModal').classList.remove('hidden');
+        }
+
+        function hideStartAllModal() {
+            document.getElementById('startAllModal').classList.add('hidden');
+        }
+
+        // Fetch storage usage
+        function fetchStorageUsed() {
+            fetch('/get_storage_usage')
+                .then(response => response.json())
+                .then(data => {
+                    const storageElement = document.querySelector('.bg-purple-100 .text-2xl');
+                    const progressBar = document.querySelector('.bg-purple-100 .bg-purple-600');
+                    const percentageText = document.querySelector('.bg-purple-100 .text-xs');
+                    
+                    if (storageElement) storageElement.textContent = data.size_formatted;
+                    if (progressBar) progressBar.style.width = `${data.percentage}%`;
+                    if (percentageText) percentageText.textContent = `${data.percentage}% of {{ settings.max_storage_gb }} GB`;
+                })
+                .catch(error => console.error('Error fetching storage:', error));
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             fetchStorageUsed();
-            
-            // Auto-refresh storage information every 30 seconds
             setInterval(fetchStorageUsed, 30000);
             
-            // Handle modal backdrop click to close
+            // Modal backdrop click handlers
             document.getElementById('cameraDetailsModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    hideCameraDetails();
+                if (e.target === this) hideCameraDetails();
+            });
+            
+            document.getElementById('startAllModal').addEventListener('click', function(e) {
+                if (e.target === this) hideStartAllModal();
+            });
+            
+            // Start all recordings button
+            document.getElementById('startAllRecordings').addEventListener('click', showStartAllModal);
+            
+            // Stop all recordings
+            document.getElementById('stopAllRecordings').addEventListener('click', function() {
+                if (confirm("Are you sure you want to stop all recordings?")) {
+                    fetch('/stop_all_recordings', {
+                        method: 'POST'
+                    }).then(response => {
+                        if (response.ok) window.location.reload();
+                    });
                 }
             });
-        });
-
-        // Start all recordings
-        document.getElementById('startAllRecordings').addEventListener('click', function() {
-            const segmentTime = prompt("Enter segment time in seconds:", "{{ settings.segment_time }}");
-            if (segmentTime) {
-                fetch('/start_all_recordings', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `segment_time=${segmentTime}`
-                }).then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    }
-                });
-            }
-        });
-
-        // Stop all recordings
-        document.getElementById('stopAllRecordings').addEventListener('click', function() {
-            if (confirm("Are you sure you want to stop all recordings?")) {
-                fetch('/stop_all_recordings', {
-                    method: 'POST'
-                }).then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    }
-                });
-            }
-        });
-
-        // Download all recordings
-        document.getElementById('downloadAllRecordings').addEventListener('click', function() {
-            if (confirm("This may take a while depending on the amount of recordings. Continue?")) {
-                window.location.href = '/download_all_recordings';
-            }
-        });
-
-        // Clear old recordings
-        document.getElementById('clearOldRecordings').addEventListener('click', function() {
-            const days = prompt("Enter number of days to keep recordings (older than this will be deleted):", "{{ settings.retention_days }}");
-            if (days) {
-                if (confirm(`Are you sure you want to clear all recordings older than ${days} days? This cannot be undone.`)) {
+            
+            // Download all recordings
+            document.getElementById('downloadAllRecordings').addEventListener('click', function() {
+                if (confirm("This may take a while depending on the amount of recordings. Continue?")) {
+                    window.location.href = '/download_all_recordings';
+                }
+            });
+            
+            // Clear old recordings
+            document.getElementById('clearOldRecordings').addEventListener('click', function() {
+                const days = prompt("Enter number of days to keep recordings:", "{{ settings.retention_days }}");
+                if (days && confirm(`Delete all recordings older than ${days} days?`)) {
                     fetch('/clear_old_recordings', {
                         method: 'POST',
                         headers: {
@@ -368,12 +470,10 @@
                         },
                         body: `days=${days}`
                     }).then(response => {
-                        if (response.ok) {
-                            window.location.reload();
-                        }
+                        if (response.ok) window.location.reload();
                     });
                 }
-            }
+            });
         });
     </script>
 </body>
