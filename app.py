@@ -18,8 +18,8 @@ os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 # Set up the log manager with the configured log file
 log_manager = LogManager.get_instance(log_file_path)
 
-# Now it's safe to import the other modules that depend on logging
-from recorder import Recorder
+# Now import the enhanced recorder and storage modules
+from recorder import Recorder, EncodingPreset, VideoQuality
 from storage import StorageManager
 
 # Initialize Flask app
@@ -45,28 +45,48 @@ storage_manager = StorageManager()
 
 @app.route('/')
 def index():
-    """Main dashboard page"""
+    """Main dashboard page with encoding options"""
     cameras = recorder.cameras
     recording_cameras = recorder.get_recording_status()
     storage_info = storage_manager.get_storage_usage()
     settings = Config.load_settings()
+    encoding_info = recorder.get_encoding_info()
     
     return render_template(
         'index.html', 
         cameras=cameras, 
         recording_cameras=recording_cameras,
         storage_info=storage_info,
-        settings=settings
+        settings=settings,
+        encoding_info=encoding_info
     )
 
 @app.route('/start_recording', methods=['POST'])
 def start_recording():
-    """Start recording for a specific camera"""
+    """Start recording for a specific camera with encoding options"""
     camera_id = request.form['camera_id']
     segment_time = int(request.form.get('segment_time', Config.DEFAULT_SEGMENT_TIME))
     
-    if recorder.start_recording(camera_id, segment_time):
-        flash(f"Started recording for camera {camera_id}", "success")
+    # Get encoding settings
+    encoding_preset = request.form.get('encoding_preset', 'copy')
+    quality = request.form.get('quality', 'HIGH')
+    audio_enabled = request.form.get('audio_enabled', 'off') == 'on'
+    
+    # Parse custom encoding parameters if provided
+    custom_params = None
+    custom_params_str = request.form.get('custom_params', '').strip()
+    if custom_params_str:
+        custom_params = custom_params_str.split()
+    
+    if recorder.start_recording(
+        camera_id, 
+        segment_time, 
+        encoding_preset=encoding_preset,
+        quality=quality,
+        audio_enabled=audio_enabled,
+        custom_params=custom_params
+    ):
+        flash(f"Started recording for camera {camera_id} with {encoding_preset} encoding", "success")
     else:
         flash(f"Failed to start recording for camera {camera_id}", "error")
     
@@ -98,12 +118,15 @@ def download_recording(filename):
 
 @app.route('/start_all_recordings', methods=['POST'])
 def start_all_recordings():
-    """Start recording for all cameras"""
+    """Start recording for all cameras with encoding options"""
     segment_time = int(request.form.get('segment_time', Config.DEFAULT_SEGMENT_TIME))
-    count = recorder.start_all_recordings(segment_time)
+    encoding_preset = request.form.get('encoding_preset', 'copy')
+    quality = request.form.get('quality', 'HIGH')
+    
+    count = recorder.start_all_recordings(segment_time, encoding_preset, quality)
     
     if count > 0:
-        flash(f"Started recording for {count} cameras", "success")
+        flash(f"Started recording for {count} cameras with {encoding_preset} encoding", "success")
     else:
         flash("No new recordings started", "info")
     
@@ -154,6 +177,11 @@ def get_storage_usage():
     """Get current storage usage"""
     return jsonify(storage_manager.get_storage_usage())
 
+@app.route('/get_encoding_info')
+def get_encoding_info():
+    """Get available encoding options"""
+    return jsonify(recorder.get_encoding_info())
+
 @app.route('/download_all_recordings')
 def download_all_recordings():
     """Download all recordings as a ZIP archive"""
@@ -192,14 +220,17 @@ def download_selected_recordings():
 
 @app.route('/settings', methods=['GET', 'POST'])
 def manage_settings():
-    """Manage application settings"""
+    """Manage application settings including encoding defaults"""
     if request.method == 'POST':
         # Update settings
         settings = {
             "segment_time": int(request.form.get('segment_time', Config.DEFAULT_SEGMENT_TIME)),
             "retention_days": int(request.form.get('retention_days', Config.DEFAULT_RETENTION_DAYS)),
             "max_storage_gb": int(request.form.get('max_storage_gb', Config.MAX_STORAGE_GB)),
-            "auto_cleanup": request.form.get('auto_cleanup', 'off') == 'on'
+            "auto_cleanup": request.form.get('auto_cleanup', 'off') == 'on',
+            "default_encoding": request.form.get('default_encoding', 'copy'),
+            "default_quality": request.form.get('default_quality', 'HIGH'),
+            "default_audio": request.form.get('default_audio', 'off') == 'on'
         }
         
         # Save settings
@@ -218,7 +249,8 @@ def manage_settings():
     
     # GET request - show settings form
     settings = Config.load_settings()
-    return render_template('settings.html', settings=settings)
+    encoding_info = recorder.get_encoding_info()
+    return render_template('settings.html', settings=settings, encoding_info=encoding_info)
 
 @app.route('/camera_stats/<camera_id>')
 def camera_stats(camera_id):
@@ -308,13 +340,18 @@ def clear_logs():
 
 @app.route('/api/start_recording/<camera_id>', methods=['POST'])
 def api_start_recording(camera_id):
-    """API endpoint to start recording for a camera"""
+    """API endpoint to start recording for a camera with encoding options"""
     if camera_id not in recorder.cameras:
         return jsonify({"success": False, "error": "Camera not found"}), 404
     
-    segment_time = request.json.get('segment_time', Config.DEFAULT_SEGMENT_TIME)
+    data = request.json or {}
+    segment_time = data.get('segment_time', Config.DEFAULT_SEGMENT_TIME)
+    encoding_preset = data.get('encoding_preset', 'copy')
+    quality = data.get('quality', 'HIGH')
+    audio_enabled = data.get('audio_enabled', False)
+    custom_params = data.get('custom_params', None)
     
-    if recorder.start_recording(camera_id, segment_time):
+    if recorder.start_recording(camera_id, segment_time, encoding_preset, quality, audio_enabled, custom_params):
         return jsonify({"success": True, "message": f"Started recording for camera {camera_id}"})
     else:
         return jsonify({"success": False, "error": f"Failed to start recording for camera {camera_id}"}), 400
@@ -334,6 +371,11 @@ def api_stop_recording(camera_id):
 def api_storage_info():
     """API endpoint to get storage information"""
     return jsonify(storage_manager.get_storage_usage())
+
+@app.route('/api/encoding_info')
+def api_encoding_info():
+    """API endpoint to get encoding capabilities"""
+    return jsonify(recorder.get_encoding_info())
 
 @app.route('/api/recordings')
 def api_recordings():
@@ -384,8 +426,15 @@ def init_app():
     if settings.get('auto_cleanup', True):
         storage_manager.start_background_cleanup()
     
-    # Log application start
+    # Log application start and GPU capabilities
     logger.info("Application started")
+    encoding_info = recorder.get_encoding_info()
+    if encoding_info['gpu_available']['nvidia']:
+        logger.info("NVIDIA GPU acceleration available")
+    if encoding_info['gpu_available']['amd']:
+        logger.info("AMD GPU acceleration available")
+    if encoding_info['gpu_available']['intel']:
+        logger.info("Intel QuickSync acceleration available")
 
 if __name__ == "__main__":
     init_app()
