@@ -1,6 +1,9 @@
 {
-    "segment_time": 60,
+    "segment_time": 300,
     "retention_days": 7,
     "max_storage_gb": 50,
-    "auto_cleanup": true
+    "auto_cleanup": true,
+    "default_encoding": "copy",
+    "default_quality": "HIGH",
+    "default_audio": false
 }

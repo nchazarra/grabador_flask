@@ -4,9 +4,10 @@ import time
 from flask_httpauth import HTTPBasicAuth
 from datetime import datetime
 import logging
-
+from recording_scheduler import RecordingScheduler
 # First, import config
 from config import Config
+import psutil
 
 # Initialize logging system with a specific file path
 from logs import LogManager, get_logger, DEFAULT_LOG_FILE
@@ -405,6 +406,23 @@ def api_recordings():
     
     return jsonify(result)
 
+@app.route('/camera_preview/<camera_id>')
+def camera_preview(camera_id):
+    """Generate and serve a preview frame for a camera."""
+    frame_path = recorder.capture_frame(camera_id)
+    if frame_path:
+        return send_file(frame_path, mimetype='image/jpeg')
+    else:
+        # Return a placeholder image if frame capture fails
+        return send_from_directory('static', 'placeholder.png')
+
+@app.route('/api/system_stats')
+def api_system_stats():
+    """API endpoint to get system stats like CPU load."""
+    return jsonify({
+        'cpu_percent': psutil.cpu_percent(interval=0.1)
+    })
+
 # Error handlers
 @app.errorhandler(404)
 def page_not_found(e):
@@ -425,6 +443,11 @@ def init_app():
     settings = Config.load_settings()
     if settings.get('auto_cleanup', True):
         storage_manager.start_background_cleanup()
+    
+    # Initialize and start the sunrise/sunset scheduler
+    # We pass the 'recorder' instance to the scheduler here
+    camera_scheduler = RecordingScheduler(recorder, recorder.cameras)
+    camera_scheduler.start()
     
     # Log application start and GPU capabilities
     logger.info("Application started")
