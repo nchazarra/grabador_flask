@@ -123,7 +123,24 @@
                         </div>
                     </div>
                 </div>
-                
+                <div class="border-b pb-6">
+    <h3 class="text-lg font-medium text-gray-800 mb-4">GPU Settings</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="md:col-span-2">
+            <div class="flex items-center">
+                <input type="checkbox" id="gpu_acceleration" name="gpu_acceleration"
+                       {{ 'checked' if settings.gpu_acceleration else '' }}
+                       class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                <label for="gpu_acceleration" class="ml-2 block text-sm text-gray-700">
+                    Enable GPU acceleration (NVIDIA only)
+                </label>
+            </div>
+            <p class="mt-1 text-sm text-gray-500">
+                Use NVIDIA GPU to accelerate video encoding and decoding.
+            </p>
+        </div>
+    </div>
+</div>
                 <!-- Camera Settings Section (readonly, just for info) -->
                 <div>
                     <h3 class="text-lg font-medium text-gray-800 mb-4">Camera Configuration</h3>
@@ -131,19 +148,20 @@
                         Camera configuration is stored in <code class="bg-gray-100 px-1 py-0.5 rounded">cameras.json</code> file.
                         To modify cameras, edit this file directly.
                     </p>
-                    <div class="bg-gray-50 rounded-md p-4 overflow-auto max-h-40">
-                        <pre class="text-xs text-gray-800">{
-    "camera1": {
-        "name": "Camera Name",
-        "rtsp_url": "rtsp://username:password@camera-ip:554/stream"
-    },
-    "camera2": {
-        "name": "Another Camera",
-        "rtsp_url": "rtsp://username:password@camera-ip:554/stream"
-    }
+                    <div class="bg-gray-50 rounded-md p-4 overflow-auto max-h-60">
+    <pre class="text-xs text-gray-800">{
+"camera1": {
+"name": "Camera Name",
+"rtsp_url": "rtsp://user:pass@ip:554/stream",
+"latitude": 40.7128,
+"longitude": -74.0060,
+"auto_recording": true
+}
 }</pre>
-                    </div>
-                </div>
+    <p class="text-xs text-gray-600 mt-2">
+        Add `latitude`, `longitude`, and `auto_recording` (true/false) to enable automatic recording between local sunset and sunrise.
+    </p>
+</div>
                 
                 <div class="pt-4 flex justify-end">
                     <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors">

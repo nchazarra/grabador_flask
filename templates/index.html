@@ -98,9 +98,7 @@
             {% for camera_id, camera_info in cameras.items() %}
             <div class="card bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="relative">
-                    <div class="bg-gray-200 h-48 flex items-center justify-center">
-                        <i class="fas fa-camera text-4xl text-gray-400"></i>
-                    </div>
+    <img src="{{ url_for('camera_preview', camera_id=camera_id) }}" alt="Camera preview for {{ camera_info.name }}" class="w-full h-48 object-cover">
                     {% if camera_id in recording_cameras %}
                     <div class="absolute top-4 right-4 flex items-center">
                         <span class="recording-pulse inline-flex h-3 w-3 rounded-full bg-red-600 mr-2"></span>
@@ -245,6 +243,13 @@
                     </div>
                     <div class="text-xs text-gray-600 mt-1">
                         {{ encoding_info.encoding_capabilities|length }} codecs available
+                    </div>
+                </div>
+                <div class="bg-red-100 rounded-lg p-4">
+                    <div class="text-red-800 text-sm font-medium">CPU Load</div>
+                    <div class="text-2xl font-bold text-red-900" id="cpu-load">-- %</div>
+                    <div class="mt-2 bg-gray-200 rounded-full h-2">
+                        <div id="cpu-load-bar" class="bg-red-600 h-2 rounded-full" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
@@ -423,12 +428,28 @@
                 })
                 .catch(error => console.error('Error fetching storage:', error));
         }
+          // Fetch CPU load
+        function fetchCpuLoad() {
+            fetch('/api/system_stats')
+                .then(response => response.json())
+                .then(data => {
+                    const cpuElement = document.getElementById('cpu-load');
+                    const cpuBar = document.getElementById('cpu-load-bar');
+                    
+                    if (cpuElement && cpuBar) {
+                        const percent = Math.round(data.cpu_percent);
+                        cpuElement.textContent = `${percent} %`;
+                        cpuBar.style.width = `${percent}%`;
+                    }
+                })
+                .catch(error => console.error('Error fetching CPU stats:', error));
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             fetchStorageUsed();
             setInterval(fetchStorageUsed, 30000);
-            
+            setInterval(fetchCpuLoad, 2500); // Update CPU load every 2.5 seconds
             // Modal backdrop click handlers
             document.getElementById('cameraDetailsModal').addEventListener('click', function(e) {
                 if (e.target === this) hideCameraDetails();
