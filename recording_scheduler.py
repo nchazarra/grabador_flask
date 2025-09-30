@@ -21,7 +21,7 @@ class RecordingScheduler:
         local_tz = ZoneInfo("Europe/Madrid")
 
         while not self.stop_event.is_set():
-            # This is a full datetime object with the correct timezone
+            # Get current time in local timezone
             now_local = datetime.now(local_tz)
 
             for camera_id, details in self.cameras.items():
@@ -38,29 +38,36 @@ class RecordingScheduler:
 
                     sun = Sun(lat, lon)
                     
-                    # --- START OF FIX ---
-                    # Pass the timezone-aware datetime object, not a simple date object
-                    sunrise_utc = sun.get_sunrise_time(now_local)
-                    sunset_utc = sun.get_sunset_time(now_local)
-                    # --- END OF FIX ---
-
+                    # Create a naive datetime for today at midnight (no timezone)
+                    today_naive = datetime(now_local.year, now_local.month, now_local.day)
+                    
+                    # Get sunrise/sunset times in UTC
+                    sunrise_utc = sun.get_sunrise_time(today_naive)
+                    sunset_utc = sun.get_sunset_time(today_naive)
+                    
+                    # Convert UTC times to local timezone
                     sunrise_local = sunrise_utc.astimezone(local_tz)
                     sunset_local = sunset_utc.astimezone(local_tz)
 
                     is_recording = camera_id in self.recorder.get_recording_status()
 
-                    if now_local > sunset_local or now_local < sunrise_local:
+                    # Record during night time (after sunset OR before sunrise)
+                    if now_local >= sunset_local or now_local < sunrise_local:
                         if not is_recording:
-                            logger.info(f"Scheduler: Starting recording for {camera_id} (night time). Sunrise: {sunrise_local.strftime('%H:%M')}, Sunset: {sunset_local.strftime('%H:%M')}")
+                            logger.info(f"Scheduler: Starting recording for {camera_id} (night time). Sunrise: {sunrise_local.strftime('%H:%M')}, Sunset: {sunset_local.strftime('%H:%M')}, Current: {now_local.strftime('%H:%M')}")
                             self.recorder.start_recording(camera_id)
                     else:
+                        # During day time (between sunrise and sunset)
                         if is_recording:
-                            logger.info(f"Scheduler: Stopping recording for {camera_id} (day time). Sunrise: {sunrise_local.strftime('%H:%M')}, Sunset: {sunset_local.strftime('%H:%M')}")
+                            logger.info(f"Scheduler: Stopping recording for {camera_id} (day time). Sunrise: {sunrise_local.strftime('%H:%M')}, Sunset: {sunset_local.strftime('%H:%M')}, Current: {now_local.strftime('%H:%M')}")
                             self.recorder.stop_recording(camera_id)
 
+                except SunTimeException as e:
+                    logger.error(f"Sun time calculation error for {camera_id}: {e}")
                 except Exception as e:
                     logger.error(f"An unexpected error occurred in scheduler for {camera_id}: {type(e).__name__}: {e}")
             
+            # Check every minute
             self.stop_event.wait(60)
 
     def start(self):
