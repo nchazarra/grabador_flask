@@ -44,6 +44,9 @@ logger = get_logger(__name__)
 recorder = Recorder()
 storage_manager = StorageManager()
 
+# Initialize scheduler (make it global so routes can access it)
+camera_scheduler = None
+
 @app.route('/')
 def index():
     """Main dashboard page with encoding options"""
@@ -87,6 +90,9 @@ def start_recording():
         audio_enabled=audio_enabled,
         custom_params=custom_params
     ):
+        # Clear manual stop flag when manually starting
+        if camera_scheduler:
+            camera_scheduler.clear_manual_stop(camera_id)
         flash(f"Started recording for camera {camera_id} with {encoding_preset} encoding", "success")
     else:
         flash(f"Failed to start recording for camera {camera_id}", "error")
@@ -99,6 +105,9 @@ def stop_recording():
     camera_id = request.form['camera_id']
     
     if recorder.stop_recording(camera_id):
+        # Mark as manual stop in scheduler to prevent immediate restart
+        if camera_scheduler:
+            camera_scheduler.mark_manual_stop(camera_id)
         flash(f"Stopped recording for camera {camera_id}", "success")
     else:
         flash(f"Failed to stop recording for camera {camera_id}", "error")
@@ -126,6 +135,11 @@ def start_all_recordings():
     
     count = recorder.start_all_recordings(segment_time, encoding_preset, quality)
     
+    # Clear manual stop flags for all cameras when starting all
+    if camera_scheduler and count > 0:
+        for camera_id in recorder.cameras:
+            camera_scheduler.clear_manual_stop(camera_id)
+    
     if count > 0:
         flash(f"Started recording for {count} cameras with {encoding_preset} encoding", "success")
     else:
@@ -137,6 +151,11 @@ def start_all_recordings():
 def stop_all_recordings():
     """Stop recording for all cameras"""
     count = recorder.stop_all_recordings()
+    
+    # Mark all cameras as manually stopped
+    if camera_scheduler and count > 0:
+        for camera_id in recorder.cameras:
+            camera_scheduler.mark_manual_stop(camera_id)
     
     if count > 0:
         flash(f"Stopped recording for {count} cameras", "success")
@@ -353,6 +372,9 @@ def api_start_recording(camera_id):
     custom_params = data.get('custom_params', None)
     
     if recorder.start_recording(camera_id, segment_time, encoding_preset, quality, audio_enabled, custom_params):
+        # Clear manual stop flag when manually starting
+        if camera_scheduler:
+            camera_scheduler.clear_manual_stop(camera_id)
         return jsonify({"success": True, "message": f"Started recording for camera {camera_id}"})
     else:
         return jsonify({"success": False, "error": f"Failed to start recording for camera {camera_id}"}), 400
@@ -364,6 +386,9 @@ def api_stop_recording(camera_id):
         return jsonify({"success": False, "error": "Camera not found"}), 404
     
     if recorder.stop_recording(camera_id):
+        # Mark as manual stop in scheduler to prevent immediate restart
+        if camera_scheduler:
+            camera_scheduler.mark_manual_stop(camera_id)
         return jsonify({"success": True, "message": f"Stopped recording for camera {camera_id}"})
     else:
         return jsonify({"success": False, "error": f"Failed to stop recording or camera {camera_id} is not recording"}), 400
@@ -435,6 +460,8 @@ def server_error(e):
 # Initialize the application
 def init_app():
     """Initialize the application"""
+    global camera_scheduler
+    
     # Create necessary directories
     os.makedirs(Config.OUTPUT_DIR, exist_ok=True)
     os.makedirs(Config.TEMP_DIR, exist_ok=True)
@@ -445,7 +472,6 @@ def init_app():
         storage_manager.start_background_cleanup()
     
     # Initialize and start the sunrise/sunset scheduler
-    # We pass the 'recorder' instance to the scheduler here
     camera_scheduler = RecordingScheduler(recorder, recorder.cameras)
     camera_scheduler.start()
     
@@ -458,6 +484,14 @@ def init_app():
         logger.info("AMD GPU acceleration available")
     if encoding_info['gpu_available']['intel']:
         logger.info("Intel QuickSync acceleration available")
+    
+    # Log scheduler status
+    auto_cameras = [cam_id for cam_id, details in recorder.cameras.items() 
+                    if details.get('auto_recording', False)]
+    if auto_cameras:
+        logger.info(f"Sunrise/sunset scheduler active for cameras: {', '.join(auto_cameras)}")
+    else:
+        logger.info("No cameras configured for automatic sunrise/sunset recording")
 
 if __name__ == "__main__":
     init_app()
