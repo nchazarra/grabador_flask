@@ -100,7 +100,13 @@ class Recorder:
         logger.info(f"Starting recording for camera {camera_id} with encoding: {encoding_preset.value}")
         consecutive_failures = 0
         max_consecutive_failures = 5
+        
         while not self.stop_flags.get(camera_id, False):
+            # Check stop flag at the beginning of each loop iteration
+            if self.stop_flags.get(camera_id, False):
+                logger.info(f"Stop flag detected for camera {camera_id}, exiting recording loop")
+                break
+                
             if consecutive_failures >= max_consecutive_failures:
                 current_retry_delay = retry_delay * 2
                 logger.warning(f"Multiple failures for camera {camera_id}. Increasing retry delay to {current_retry_delay}s")
@@ -130,29 +136,46 @@ class Recorder:
                 command.append(output_pattern)
                 logger.debug(f"FFmpeg command: {' '.join(command)}")
                 
+                # Don't use process groups on Windows - it causes issues with FFmpeg termination
                 creation_flags = 0
-                if platform.system() == "Windows":
-                    creation_flags = subprocess.CREATE_NEW_PROCESS_GROUP
                 
                 with open(log_file_path, "ab") as log_file:
+                    # Enable stdin pipe for Windows to send 'q' command
                     process = subprocess.Popen(
                         command,
+                        stdin=subprocess.PIPE if platform.system() == "Windows" else None,
                         stdout=log_file,
                         stderr=subprocess.STDOUT,
                         creationflags=creation_flags
                     )
+                    
                 with self.process_lock:
                     self.recording_processes[camera_id] = process
-                process.wait()
+                
+                # Monitor process with periodic stop flag checks
+                while process.poll() is None:
+                    # Check stop flag every second
+                    if self.stop_flags.get(camera_id, False):
+                        logger.info(f"Stop flag detected during recording for camera {camera_id}")
+                        break
+                    time.sleep(1)
+                
+                # If we broke out due to stop flag, don't retry
                 if self.stop_flags.get(camera_id, False):
+                    logger.info(f"Recording stopped by user for camera {camera_id}")
                     break
+                
+                # Process ended naturally
                 logger.warning(f"FFmpeg process for camera {camera_id} ended with code {process.returncode}. Restarting...")
                 consecutive_failures = consecutive_failures + 1 if process.returncode != 0 else 0
                 time.sleep(current_retry_delay)
+                
             except Exception as e:
                 consecutive_failures += 1
                 logger.error(f"Error occurred for camera {camera_id}: {e}. Restarting...")
                 time.sleep(current_retry_delay)
+        
+        logger.info(f"Recording thread for camera {camera_id} has exited")
 
     def start_recording(self, camera_id, segment_time=None, encoding_preset=None, 
                        quality=None, audio_enabled=False, custom_params=None):
@@ -205,27 +228,62 @@ class Recorder:
         """Stop recording for a specific camera"""
         with self.process_lock:
             if camera_id in self.recording_processes:
+                # Set stop flag first to prevent restart loop
                 self.stop_flags[camera_id] = True
                 process = self.recording_processes[camera_id]
+                
                 try:
+                    logger.info(f"Stopping recording for camera {camera_id}")
+                    
                     if platform.system() == "Windows":
-                        logger.info(f"Sending CTRL_BREAK_EVENT to process group for camera {camera_id} on Windows.")
-                        process.send_signal(signal.CTRL_BREAK_EVENT)
+                        # On Windows, FFmpeg responds well to 'q' on stdin for graceful shutdown
+                        try:
+                            if process.stdin:
+                                process.stdin.write(b'q')
+                                process.stdin.flush()
+                                process.stdin.close()
+                                logger.info(f"Sent 'q' command to FFmpeg for camera {camera_id}")
+                        except Exception as stdin_error:
+                            logger.warning(f"Could not write to stdin for camera {camera_id}: {stdin_error}")
+                        
+                        # Wait a bit for graceful shutdown
+                        try:
+                            process.wait(timeout=5)
+                            logger.info(f"FFmpeg gracefully stopped for camera {camera_id}")
+                        except subprocess.TimeoutExpired:
+                            logger.warning(f"FFmpeg did not stop gracefully for camera {camera_id}, forcing termination")
+                            process.terminate()
+                            try:
+                                process.wait(timeout=5)
+                            except subprocess.TimeoutExpired:
+                                logger.error(f"FFmpeg did not terminate for camera {camera_id}, killing process")
+                                process.kill()
+                                process.wait()
                     else:
-                        logger.info(f"Sending SIGINT to process for camera {camera_id} on Unix-like OS.")
-                        process.send_signal(signal.SIGINT)
-                    try:
-                        process.wait(timeout=10)
-                    except subprocess.TimeoutExpired:
-                        logger.warning(f"Process for camera {camera_id} did not terminate gracefully, forcing kill.")
-                        process.kill()
-                    del self.recording_processes[camera_id]
+                        # On Unix-like systems, use SIGTERM first, then SIGKILL
+                        logger.info(f"Sending SIGTERM to process for camera {camera_id}")
+                        process.terminate()
+                        try:
+                            process.wait(timeout=10)
+                            logger.info(f"FFmpeg gracefully stopped for camera {camera_id}")
+                        except subprocess.TimeoutExpired:
+                            logger.warning(f"FFmpeg did not stop gracefully for camera {camera_id}, forcing kill")
+                            process.kill()
+                            process.wait()
+                    
+                    # Clean up
+                    if camera_id in self.recording_processes:
+                        del self.recording_processes[camera_id]
+                    logger.info(f"Recording stopped successfully for camera {camera_id}")
                     return True
+                    
                 except Exception as e:
                     logger.error(f"Error stopping recording for camera {camera_id}: {e}")
                     try:
                         process.kill()
-                        del self.recording_processes[camera_id]
+                        process.wait()
+                        if camera_id in self.recording_processes:
+                            del self.recording_processes[camera_id]
                     except Exception as kill_e:
                         logger.error(f"Failed to kill process for camera {camera_id} after error: {kill_e}")
                     return False
@@ -277,9 +335,14 @@ class Recorder:
         """Stop recording for all cameras"""
         with self.process_lock:
             camera_ids = list(self.recording_processes.keys())
-            for camera_id in camera_ids:
-                self.stop_recording(camera_id)
-            return len(camera_ids)
+        
+        # Stop recordings without holding the lock for too long
+        stopped_count = 0
+        for camera_id in camera_ids:
+            if self.stop_recording(camera_id):
+                stopped_count += 1
+        
+        return stopped_count
 
     def get_recording_status(self):
         """Get status of all recording processes"""
