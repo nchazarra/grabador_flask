@@ -1,14 +1,9 @@
 {
     "camera1": {
         "name": "Noreste",
-        "rtsp_url": ""
-    },
-    "camera2": {
-        "name": "Noroeste",
-        "rtsp_url": ""
-    },
-	"camera3": {
-        "name": "Norte",
-        "rtsp_url": ""
-}
+        "rtsp_url": "",
+	    "auto_recording": true,
+    	"latitude": 38.083,
+    	"longitude": -0.717
+   }
 }
