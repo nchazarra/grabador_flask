@@ -93,6 +93,66 @@ class Recorder:
         except Exception as e:
             logger.error(f"Error verifying FFmpeg: {e}")
 
+    def check_rtsp_stream(self, camera_id: str, timeout: int = 15) -> Dict[str, Any]:
+        """
+        Check if RTSP stream is accessible and get stream info.
+        Returns dict with 'success', 'error', and 'stream_info' keys.
+        """
+        if camera_id not in self.cameras:
+            return {'success': False, 'error': 'Camera not found', 'stream_info': None}
+        
+        rtsp_url = self.cameras[camera_id].get("rtsp_url", "")
+        if not rtsp_url:
+            return {'success': False, 'error': 'No RTSP URL configured', 'stream_info': None}
+        
+        # Use ffprobe to check stream
+        command = [
+            'ffprobe',
+            '-v', 'quiet',
+            '-rtsp_transport', 'tcp',
+            '-timeout', str(timeout * 1000000),
+            '-print_format', 'json',
+            '-show_streams',
+            '-show_format',
+            rtsp_url
+        ]
+        
+        try:
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=timeout + 5
+            )
+            
+            if result.returncode == 0:
+                import json
+                stream_info = json.loads(result.stdout)
+                return {
+                    'success': True,
+                    'error': None,
+                    'stream_info': stream_info
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f'FFprobe failed with code {result.returncode}: {result.stderr[:200]}',
+                    'stream_info': None
+                }
+        
+        except subprocess.TimeoutExpired:
+            return {
+                'success': False,
+                'error': f'Connection timeout after {timeout}s',
+                'stream_info': None
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e),
+                'stream_info': None
+            }
+
     def _detect_gpu(self):
         """Detect available GPU hardware for encoding"""
         gpu_info = {'nvidia': False, 'amd': False, 'intel': False, 'type': None}
@@ -256,10 +316,21 @@ class Recorder:
                 start_time = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
                 log_file_path = os.path.join(camera_output_dir, "ffmpeg_log.txt")
                 
-                # Build FFmpeg command
+                # Build FFmpeg command with improved RTSP handling
                 command = [
                     Config.FFMPEG_PATH,
+                    # Input options (must come before -i)
                     '-rtsp_transport', 'tcp',
+                    '-rtsp_flags', 'prefer_tcp',
+                    # Increase buffer and analysis time for problematic streams
+                    '-analyzeduration', '10000000',  # 10 seconds
+                    '-probesize', '10000000',  # 10MB
+                    '-fflags', '+genpts+discardcorrupt',
+                    '-err_detect', 'ignore_err',
+                    # Timeout settings
+                    '-timeout', str(Config.FFMPEG_TIMEOUT * 1000000),
+                    '-stimeout', str(Config.FFMPEG_TIMEOUT * 1000000),
+                    # Input
                     '-i', rtsp_url
                 ]
                 
@@ -278,13 +349,17 @@ class Recorder:
                     '-f', 'segment',
                     '-segment_time', str(segment_time),
                     '-segment_format', 'mp4',
+                    '-segment_atclocktime', '1',
                     '-reset_timestamps', '1',
+                    '-strftime', '0',
+                    # Reconnection options
                     '-reconnect', '1',
                     '-reconnect_at_eof', '1',
                     '-reconnect_streamed', '1',
-                    '-reconnect_delay_max', '10',
-                    '-timeout', str(Config.FFMPEG_TIMEOUT * 1000000),
-                    '-stimeout', str(Config.FFMPEG_TIMEOUT * 1000000),
+                    '-reconnect_delay_max', '30',
+                    # Handle stream errors gracefully
+                    '-max_muxing_queue_size', '1024',
+                    '-avoid_negative_ts', 'make_zero',
                 ])
                 
                 # Output filename pattern
@@ -323,9 +398,20 @@ class Recorder:
                 
                 # Process ended unexpectedly
                 return_code = process.returncode
+                
+                # Decode common FFmpeg error codes
+                error_messages = {
+                    1: "Generic error (check ffmpeg_log.txt for details)",
+                    8: "Invalid data / connection issue with RTSP stream",
+                    69: "Service unavailable",
+                    188: "Invalid input",
+                    234: "More data needed",
+                }
+                error_detail = error_messages.get(return_code, "Unknown error")
+                
                 logger.warning(
                     f"FFmpeg process for camera {camera_id} ended "
-                    f"with code {return_code}. Restarting..."
+                    f"with code {return_code} ({error_detail}). Restarting..."
                 )
                 
                 stats.restarts_count += 1
@@ -410,7 +496,8 @@ class Recorder:
     def start_recording(self, camera_id: str, segment_time: Optional[int] = None,
                        encoding_preset=None, quality=None,
                        audio_enabled: bool = False,
-                       custom_params: Optional[List[str]] = None) -> bool:
+                       custom_params: Optional[List[str]] = None,
+                       verify_stream: bool = False) -> bool:
         """Start recording for a specific camera"""
         
         if segment_time is None:
@@ -440,6 +527,21 @@ class Recorder:
             rtsp_url = self.cameras[camera_id].get("rtsp_url", "")
             if not rtsp_url:
                 logger.error(f"Camera {camera_id} has no RTSP URL configured")
+                return False
+        
+        # Optional stream verification (outside lock to avoid blocking)
+        if verify_stream:
+            logger.info(f"Verifying RTSP stream for camera {camera_id}...")
+            check_result = self.check_rtsp_stream(camera_id)
+            if not check_result['success']:
+                logger.error(f"Stream verification failed for {camera_id}: {check_result['error']}")
+                return False
+            logger.info(f"Stream verified for camera {camera_id}")
+        
+        with self.process_lock:
+            # Re-check in case something changed while verifying
+            if camera_id in self.recording_processes:
+                logger.warning(f"Recording already started for camera {camera_id}")
                 return False
             
             if encoding_preset not in self.encoding_capabilities:
