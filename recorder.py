@@ -319,17 +319,15 @@ class Recorder:
                 # Build FFmpeg command with improved RTSP handling
                 command = [
                     Config.FFMPEG_PATH,
-                    # Input options (must come before -i)
+                    '-hide_banner',
+                    '-loglevel', 'warning',
+                    # RTSP input options (must come before -i)
                     '-rtsp_transport', 'tcp',
                     '-rtsp_flags', 'prefer_tcp',
                     # Increase buffer and analysis time for problematic streams
-                    '-analyzeduration', '10000000',  # 10 seconds
-                    '-probesize', '10000000',  # 10MB
-                    '-fflags', '+genpts+discardcorrupt',
-                    '-err_detect', 'ignore_err',
-                    # Timeout settings
-                    '-timeout', str(Config.FFMPEG_TIMEOUT * 1000000),
-                    '-stimeout', str(Config.FFMPEG_TIMEOUT * 1000000),
+                    '-analyzeduration', '10M',
+                    '-probesize', '10M',
+                    '-fflags', '+genpts+discardcorrupt+nobuffer',
                     # Input
                     '-i', rtsp_url
                 ]
@@ -344,19 +342,12 @@ class Recorder:
                 else:
                     command.extend(['-an'])
                 
-                # Segmentation and reconnection settings
+                # Segmentation settings
                 command.extend([
                     '-f', 'segment',
                     '-segment_time', str(segment_time),
                     '-segment_format', 'mp4',
-                    '-segment_atclocktime', '1',
                     '-reset_timestamps', '1',
-                    '-strftime', '0',
-                    # Reconnection options
-                    '-reconnect', '1',
-                    '-reconnect_at_eof', '1',
-                    '-reconnect_streamed', '1',
-                    '-reconnect_delay_max', '30',
                     # Handle stream errors gracefully
                     '-max_muxing_queue_size', '1024',
                     '-avoid_negative_ts', 'make_zero',
