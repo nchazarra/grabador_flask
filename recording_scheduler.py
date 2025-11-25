@@ -8,6 +8,7 @@ from logs import get_logger
 
 logger = get_logger(__name__)
 
+
 class RecordingScheduler:
     def __init__(self, recorder_instance, cameras):
         self.recorder = recorder_instance
@@ -18,117 +19,88 @@ class RecordingScheduler:
         self.manual_stops = {}
         # Time window to prevent restart after manual stop (in seconds)
         self.manual_stop_cooldown = 300  # 5 minutes
-        # Cache for sun times to avoid recalculating every minute
-        self._sun_times_cache = {}
-        self._cache_date = None
 
-    def _get_sun_times(self, camera_id, lat, lon, local_tz):
-        """
-        Get sunrise and sunset times, handling the day boundary correctly.
-        Returns (sunrise, sunset) for the current night period.
-        """
-        now_local = datetime.now(local_tz)
-        today = now_local.date()
-        
-        # Check cache
-        if self._cache_date == today and camera_id in self._sun_times_cache:
-            return self._sun_times_cache[camera_id]
-        
-        # Clear cache if date changed
-        if self._cache_date != today:
-            self._sun_times_cache = {}
-            self._cache_date = today
-        
+    def _get_sun_times_for_date(self, lat: float, lon: float, date: datetime, local_tz) -> dict:
+        """Get sunrise and sunset times for a specific date."""
         sun = Sun(lat, lon)
         
-        # Get today's sunrise and sunset
-        today_naive = datetime(today.year, today.month, today.day)
-        sunrise_today_utc = sun.get_sunrise_time(today_naive)
-        sunset_today_utc = sun.get_sunset_time(today_naive)
+        # Create a naive datetime for the date (suntime expects naive datetime)
+        date_naive = datetime(date.year, date.month, date.day)
         
-        sunrise_today = sunrise_today_utc.astimezone(local_tz)
-        sunset_today = sunset_today_utc.astimezone(local_tz)
+        # Get sunrise/sunset in UTC
+        sunrise_utc = sun.get_sunrise_time(date_naive)
+        sunset_utc = sun.get_sunset_time(date_naive)
         
-        # Get yesterday's sunset (for the case when we're after midnight but before sunrise)
-        yesterday = today - timedelta(days=1)
-        yesterday_naive = datetime(yesterday.year, yesterday.month, yesterday.day)
-        sunset_yesterday_utc = sun.get_sunset_time(yesterday_naive)
-        sunset_yesterday = sunset_yesterday_utc.astimezone(local_tz)
+        # Convert to local timezone
+        sunrise_local = sunrise_utc.astimezone(local_tz)
+        sunset_local = sunset_utc.astimezone(local_tz)
         
-        # Get tomorrow's sunrise (for the case when we're after today's sunset)
-        tomorrow = today + timedelta(days=1)
-        tomorrow_naive = datetime(tomorrow.year, tomorrow.month, tomorrow.day)
-        sunrise_tomorrow_utc = sun.get_sunrise_time(tomorrow_naive)
-        sunrise_tomorrow = sunrise_tomorrow_utc.astimezone(local_tz)
-        
-        # Determine which night period we're in
-        # Night period 1: Yesterday sunset -> Today sunrise (after midnight, before sunrise)
-        # Night period 2: Today sunset -> Tomorrow sunrise (after sunset, before midnight)
-        
-        result = {
-            'sunrise_today': sunrise_today,
-            'sunset_today': sunset_today,
-            'sunset_yesterday': sunset_yesterday,
-            'sunrise_tomorrow': sunrise_tomorrow,
+        return {
+            'sunrise': sunrise_local,
+            'sunset': sunset_local
         }
-        
-        self._sun_times_cache[camera_id] = result
-        return result
 
-    def _is_night_time(self, camera_id, lat, lon, local_tz):
+    def _is_night_time(self, camera_id: str, lat: float, lon: float, local_tz) -> tuple:
         """
         Determine if it's currently night time (between sunset and sunrise).
-        Handles the day boundary correctly.
+        
+        Night is defined as:
+        - After today's sunset until midnight
+        - After midnight until today's sunrise
+        
+        Returns: (is_night: bool, next_change_time: datetime, change_type: str, sunrise, sunset)
         """
-        now_local = datetime.now(local_tz)
+        now = datetime.now(local_tz)
+        today = now.date()
         
         try:
-            sun_times = self._get_sun_times(camera_id, lat, lon, local_tz)
+            # Get today's sun times
+            today_sun = self._get_sun_times_for_date(lat, lon, now, local_tz)
+            sunrise_today = today_sun['sunrise']
+            sunset_today = today_sun['sunset']
             
-            sunrise_today = sun_times['sunrise_today']
-            sunset_today = sun_times['sunset_today']
-            sunset_yesterday = sun_times['sunset_yesterday']
-            sunrise_tomorrow = sun_times['sunrise_tomorrow']
+            # Extract just the time for comparison (ignore date component issues)
+            now_time = now.time()
+            sunrise_time = sunrise_today.time()
+            sunset_time = sunset_today.time()
             
-            # Case 1: After midnight but before today's sunrise
-            # We're in the night that started yesterday
-            if now_local < sunrise_today:
-                is_night = now_local >= sunset_yesterday.replace(
-                    year=now_local.year, 
-                    month=now_local.month, 
-                    day=now_local.day
-                ) - timedelta(days=1) if sunset_yesterday else True
-                logger.debug(
-                    f"Camera {camera_id}: After midnight, before sunrise. "
-                    f"Now: {now_local.strftime('%H:%M')}, "
-                    f"Sunrise today: {sunrise_today.strftime('%H:%M')} -> Night: {is_night}"
-                )
-                return True, sunrise_today, sunset_yesterday
+            # Simple logic: it's DAY if we're between sunrise and sunset
+            is_day = sunrise_time <= now_time < sunset_time
+            is_night = not is_day
             
-            # Case 2: After today's sunset
-            # We're in the night that will end tomorrow
-            if now_local >= sunset_today:
-                logger.debug(
-                    f"Camera {camera_id}: After sunset. "
-                    f"Now: {now_local.strftime('%H:%M')}, "
-                    f"Sunset today: {sunset_today.strftime('%H:%M')}, "
-                    f"Sunrise tomorrow: {sunrise_tomorrow.strftime('%H:%M')} -> Night: True"
-                )
-                return True, sunrise_tomorrow, sunset_today
+            # Determine next transition
+            if is_night:
+                if now_time < sunrise_time:
+                    # It's night (early morning), next change is sunrise today
+                    next_change = sunrise_today
+                    change_type = "sunrise"
+                else:
+                    # It's night (evening), next change is sunrise tomorrow
+                    tomorrow = today + timedelta(days=1)
+                    tomorrow_sun = self._get_sun_times_for_date(lat, lon, 
+                        datetime.combine(tomorrow, datetime.min.time()), local_tz)
+                    next_change = tomorrow_sun['sunrise']
+                    change_type = "sunrise"
+            else:
+                # It's day, next change is sunset today
+                next_change = sunset_today
+                change_type = "sunset"
             
-            # Case 3: Daytime (after sunrise, before sunset)
             logger.debug(
-                f"Camera {camera_id}: Daytime. "
-                f"Now: {now_local.strftime('%H:%M')}, "
-                f"Sunrise: {sunrise_today.strftime('%H:%M')}, "
-                f"Sunset: {sunset_today.strftime('%H:%M')} -> Night: False"
+                f"Camera {camera_id}: now={now_time.strftime('%H:%M')}, "
+                f"sunrise={sunrise_time.strftime('%H:%M')}, "
+                f"sunset={sunset_time.strftime('%H:%M')}, "
+                f"is_night={is_night}"
             )
-            return False, sunrise_today, sunset_today
+            
+            return is_night, next_change, change_type, sunrise_today, sunset_today
             
         except SunTimeException as e:
             logger.error(f"Sun time calculation error for {camera_id}: {e}")
-            # Default to not recording on error
-            return False, None, None
+            return False, None, None, None, None
+        except Exception as e:
+            logger.error(f"Unexpected error calculating sun times for {camera_id}: {e}")
+            return False, None, None, None, None
 
     def _schedule_checker(self):
         """Periodically check if recording should be started or stopped."""
@@ -136,20 +108,8 @@ class RecordingScheduler:
         local_tz = ZoneInfo("Europe/Madrid")
         
         # Log initial status
-        logger.info("Scheduler started, checking cameras...")
-        for camera_id, details in self.cameras.items():
-            if details.get("auto_recording", False):
-                lat = details.get("latitude")
-                lon = details.get("longitude")
-                if lat and lon:
-                    is_night, next_sunrise, last_sunset = self._is_night_time(
-                        camera_id, float(lat), float(lon), local_tz
-                    )
-                    logger.info(
-                        f"Camera {camera_id}: auto_recording=True, "
-                        f"lat={lat}, lon={lon}, is_night={is_night}"
-                    )
-
+        logger.info("Scheduler started, performing initial check...")
+        
         while not self.stop_event.is_set():
             now_local = datetime.now(local_tz)
 
@@ -183,25 +143,28 @@ class RecordingScheduler:
                         logger.info(f"Scheduler: Manual stop cooldown expired for {camera_id}")
                 
                 try:
-                    is_night, next_sunrise, last_sunset = self._is_night_time(
+                    is_night, next_change, change_type, sunrise, sunset = self._is_night_time(
                         camera_id, float(lat), float(lon), local_tz
                     )
                     
                     is_recording = camera_id in self.recorder.get_recording_status()
+                    
+                    # Should record during night time
+                    should_record = is_night
 
-                    if is_night and not is_recording:
-                        sunrise_str = next_sunrise.strftime('%H:%M') if next_sunrise else "N/A"
-                        sunset_str = last_sunset.strftime('%H:%M') if last_sunset else "N/A"
+                    if should_record and not is_recording:
+                        sunrise_str = sunrise.strftime('%H:%M') if sunrise else "N/A"
+                        sunset_str = sunset.strftime('%H:%M') if sunset else "N/A"
                         logger.info(
                             f"Scheduler: Starting recording for {camera_id} (night time). "
                             f"Current: {now_local.strftime('%H:%M')}, "
-                            f"Sunset: {sunset_str}, Next sunrise: {sunrise_str}"
+                            f"Sunrise: {sunrise_str}, Sunset: {sunset_str}"
                         )
                         self.recorder.start_recording(camera_id)
                         
-                    elif not is_night and is_recording:
-                        sunrise_str = next_sunrise.strftime('%H:%M') if next_sunrise else "N/A"
-                        sunset_str = last_sunset.strftime('%H:%M') if last_sunset else "N/A"
+                    elif not should_record and is_recording:
+                        sunrise_str = sunrise.strftime('%H:%M') if sunrise else "N/A"
+                        sunset_str = sunset.strftime('%H:%M') if sunset else "N/A"
                         logger.info(
                             f"Scheduler: Stopping recording for {camera_id} (day time). "
                             f"Current: {now_local.strftime('%H:%M')}, "
@@ -232,12 +195,12 @@ class RecordingScheduler:
             del self.manual_stops[camera_id]
             logger.info(f"Scheduler: Manual stop cleared for camera {camera_id}")
 
-    def get_schedule_info(self, camera_id):
+    def get_schedule_info(self, camera_id: str) -> dict:
         """Get current schedule information for a camera (useful for debugging/UI)"""
         local_tz = ZoneInfo("Europe/Madrid")
         
         if camera_id not in self.cameras:
-            return None
+            return {"error": "Camera not found"}
             
         details = self.cameras[camera_id]
         lat = details.get("latitude")
@@ -247,7 +210,7 @@ class RecordingScheduler:
             return {"error": "Missing coordinates"}
         
         try:
-            is_night, next_sunrise, last_sunset = self._is_night_time(
+            is_night, next_change, change_type, sunrise, sunset = self._is_night_time(
                 camera_id, float(lat), float(lon), local_tz
             )
             
@@ -259,10 +222,12 @@ class RecordingScheduler:
                 "latitude": lat,
                 "longitude": lon,
                 "current_time": now_local.strftime('%Y-%m-%d %H:%M:%S'),
+                "sunrise_today": sunrise.strftime('%H:%M') if sunrise else None,
+                "sunset_today": sunset.strftime('%H:%M') if sunset else None,
                 "is_night": is_night,
                 "should_record": is_night,
-                "next_sunrise": next_sunrise.strftime('%Y-%m-%d %H:%M:%S') if next_sunrise else None,
-                "last_sunset": last_sunset.strftime('%Y-%m-%d %H:%M:%S') if last_sunset else None,
+                "next_change": next_change.strftime('%Y-%m-%d %H:%M:%S') if next_change else None,
+                "next_change_type": change_type,
                 "is_recording": camera_id in self.recorder.get_recording_status(),
                 "manual_stop_active": camera_id in self.manual_stops,
             }
