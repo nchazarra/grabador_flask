@@ -448,6 +448,32 @@ def api_system_stats():
         'cpu_percent': psutil.cpu_percent(interval=0.1)
     })
 
+@app.route('/api/schedule_info')
+def api_schedule_info():
+    """API endpoint to get schedule information for all cameras (debug)"""
+    if camera_scheduler is None:
+        return jsonify({"error": "Scheduler not initialized"}), 500
+    
+    result = {}
+    for camera_id in recorder.cameras:
+        info = camera_scheduler.get_schedule_info(camera_id)
+        if info:
+            result[camera_id] = info
+    
+    return jsonify(result)
+
+@app.route('/api/schedule_info/<camera_id>')
+def api_schedule_info_camera(camera_id):
+    """API endpoint to get schedule information for a specific camera"""
+    if camera_scheduler is None:
+        return jsonify({"error": "Scheduler not initialized"}), 500
+    
+    if camera_id not in recorder.cameras:
+        return jsonify({"error": "Camera not found"}), 404
+    
+    info = camera_scheduler.get_schedule_info(camera_id)
+    return jsonify(info)
+
 # Error handlers
 @app.errorhandler(404)
 def page_not_found(e):
@@ -499,4 +525,5 @@ if __name__ == "__main__":
         host=Config.HOST,
         port=Config.PORT,
         debug=Config.DEBUG
+
     )
